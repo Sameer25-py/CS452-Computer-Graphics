@@ -1,0 +1,74 @@
+uniform int outputID;
+uniform vec3 eyePos;
+varying vec3 normal;
+varying vec3 vertex;
+
+#define PI 3.1415926
+
+vec3 shadeDiffuseFromEye();
+
+vec3 shadePhong(vec3 lightPos);
+
+vec3 shadeEnvmapReflection();
+
+void main()
+{
+    if(outputID == 0)
+    {
+        gl_FragColor = vec4(shadeDiffuseFromEye(), 1.0);
+        return;
+    }
+    if(outputID == 1)
+    {
+        gl_FragColor = vec4(shadePhong(vec3(10, 10, 10)), 1.0);
+        return;
+    }
+    if(outputID == 2)
+    {
+        // Do something interesting here for extra credit.
+        // gl_FragColor = vec4(???, 1.0);
+        // return;
+    }
+}
+
+vec3 shadeDiffuseFromEye()
+{
+    vec3 n = normalize(normal);
+    vec3 out_vec = normalize(eyePos - vertex);
+    float diffuse = abs(dot(out_vec, n));
+    return vec3(diffuse);
+}
+
+vec3 shadePhong(vec3 lightPos)
+{
+    // TODO Part 7.
+    // TODO Compute Phong shading here. You can choose any color you like. But make
+    // TODO sure that you have noticeable specular highlights in the shading.
+    // TODO Variables to use: eyePos, lightPos, normal, vertex
+
+    float ia = .003;
+    float p = 40.0;
+
+    vec3 ka = vec3(25.0, 25.0, 112.0);
+    vec3 kd = vec3(172.0, 172.0, 50.0);
+    vec3 ks = vec3(255.0, 255.0, 255.0);
+
+
+    vec3 n = normalize(normal);
+    vec3 eyevector = normalize(eyePos - vertex);
+    vec3 lightvector = normalize(lightPos - vertex);
+    vec3 h = normalize(eyevector + lightvector);
+
+    float r = distance(lightPos, vertex);
+    float invR = (1.0 / (r * r));
+
+    float diffuseFact = invR * max(0.0, dot(n,lightvector));
+
+    float specularFact = invR * pow(max(0.0, (dot(n, h))), p);
+    
+    vec3 ambientLight = ia * ka;
+    vec3 diffuseLight = kd * diffuseFact;
+    vec3 specularLight = ks * specularFact;
+
+    return vec3(ambientLight + diffuseLight + specularLight);
+}
